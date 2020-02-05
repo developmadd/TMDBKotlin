@@ -48,7 +48,6 @@ class Utilities {
 
 
         // Limpia strings para su comparación
-
         fun cleanString(string: String): String {
             val normalize = Normalizer.normalize(string.toLowerCase(), java.text.Normalizer.Form.NFD)
                 .replace("[^\\p{ASCII}]".toRegex(), "")
@@ -57,7 +56,6 @@ class Utilities {
 
 
         // Administra el hide del keyboard para un control o view en especifico
-
         fun hideKeyboardFrom(view: View) {
             view.requestFocus()
             view.postDelayed({
@@ -73,7 +71,6 @@ class Utilities {
 
 
         // Administra el hide del keyboard al cambiar de item en tabs
-
         fun hideKeyboardFromTab(tabLayout: TabLayout) {
             tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                 override fun onTabSelected(tab: TabLayout.Tab) {
