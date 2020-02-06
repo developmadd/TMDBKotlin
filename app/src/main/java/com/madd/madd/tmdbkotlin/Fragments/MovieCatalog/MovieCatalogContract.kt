@@ -1,12 +1,13 @@
 package com.madd.madd.tmdbkotlin.Fragments.MovieCatalog
 
 import com.madd.madd.tmdbkotlin.HTTP.Models.MovieList
-import io.reactivex.Observable
+import retrofit2.Call
+
 
 interface MovieCatalogContract {
 
     interface View{
-        fun showMovie(movie: MovieList.Movie)
+        fun showMovieList(movieList: List<MovieList.Movie>, page: Int)
         fun clearMovieList()
         fun showEmptyListError()
         fun showInternetError()
@@ -32,19 +33,13 @@ interface MovieCatalogContract {
         fun filterMovieList(query: String)
         fun selectMovie(movie: MovieList.Movie)
 
-        fun unSubscribeReactive()
     }
 
     interface Model{
-        fun getMoviePopularList(page: Int): Observable<MovieList.Movie>
-        fun getMovieUpcomingList(page: Int): Observable<MovieList.Movie>
-        fun getMovieTopRatedList(page: Int): Observable<MovieList.Movie>
+        fun getMoviePopularList(page: Int): Call<MovieList>
+        fun getMovieUpcomingList(page: Int): Call<MovieList>
+        fun getMovieTopRatedList(page: Int): Call<MovieList>
     }
 
-    interface Repository{
-        fun getMoviePopularList(page: Int): Observable<MovieList.Movie>
-        fun getMovieUpcomingList(page: Int): Observable<MovieList.Movie>
-        fun getMovieTopRatedList(page: Int): Observable<MovieList.Movie>
-    }
 
 }

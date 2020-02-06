@@ -7,13 +7,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
-import android.widget.SearchView
 import android.widget.TextView
+import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
+import butterknife.ButterKnife
+import com.madd.madd.tmdbkotlin.DI.App
 import com.madd.madd.tmdbkotlin.HTTP.Models.MovieList
 
 import com.madd.madd.tmdbkotlin.R
@@ -27,73 +29,90 @@ import kotlin.collections.ArrayList
 class MovieCatalogFragment : Fragment(), MovieCatalogContract.View {
 
 
-    val POPULAR_TYPE = 0
-    val UPCOMING_TYPE = 1
-    val TOP_RATED_TYPE = 2
 
-    @Inject var presenter: MovieCatalogContract.Presenter? = null
-    @BindView(R.id.CTNR_Movie_Catalog)     var recyclerView: RecyclerView? = null
-    @BindView(R.id.SV_Movie_Catalog)       var searchView: SearchView? = null
-    @BindView(R.id.TV_Movie_Catalog_Empty) var textViewEmpty: TextView? = null
-    @BindView(R.id.PB_Movie_Catalog)       var progressBar: ProgressBar? = null
+    companion object {
+        val POPULAR_TYPE = 0
+        val UPCOMING_TYPE = 1
+        val TOP_RATED_TYPE = 2
+    }
 
+
+    @Inject
+    lateinit var presenter: MovieCatalogContract.Presenter
+    lateinit var recyclerView: RecyclerView
+    lateinit var searchView: SearchView
+    lateinit var textViewEmpty: TextView
+    lateinit var progressBar: ProgressBar
 
 
     private val movieList = ArrayList<MovieList.Movie>()
-    private var page = 1
+    var onMovieSelected: MovieCatalogContract.View.MovieSelected? = null
     private var searchBarAnimationStatus = false
 
-    private var onMovieSelected: MovieCatalogContract.View.MovieSelected? = null
+    private var page = 1
     private var listType: Int = 0
+    private lateinit var movieAdapter: MovieAdapter
 
 
 
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         val v = inflater.inflate(R.layout.fragment_movie_catalog, container, false)
+        (activity!!.application as App).component!!.inject(this)
+
+        bindUI(v)
         loadView()
+
+        presenter.setView(this)
+        presenter.requestMovieList()
 
         return v
     }
 
+    fun bindUI(v:View){
+        recyclerView = v.findViewById(R.id.CTNR_Movie_Catalog)
+        searchView = v.findViewById(R.id.SV_Movie_Catalog)
+        textViewEmpty = v.findViewById(R.id.TV_Movie_Catalog_Empty)
+        progressBar = v.findViewById(R.id.PB_Movie_Catalog)
+    }
+
     fun loadView(){
 
-        recyclerView!!.setHasFixedSize(true)
-        recyclerView!!.itemAnimator = DefaultItemAnimator()
-        val movieAdapter = MovieAdapter(movieList, object : MovieAdapter.MovieEvents {
+        recyclerView.setHasFixedSize(true)
+        recyclerView.itemAnimator = DefaultItemAnimator()
+        movieAdapter = MovieAdapter(movieList, object : MovieAdapter.MovieEvents {
             override fun onMovieClick(selectedMovie: MovieList.Movie) {
-                presenter!!.selectMovie(selectedMovie)
-                Utilities.hideKeyboardFrom(searchView!!)
+                presenter.selectMovie(selectedMovie)
+                Utilities.hideKeyboardFrom(searchView)
             }
 
             override fun onRequestNextPage() {
-                presenter!!.requestMovieList()
+                presenter.requestMovieList()
             }
         })
-        recyclerView!!.layoutManager = GridLayoutManager(context,3)
-        recyclerView!!.adapter = movieAdapter
+        recyclerView.layoutManager = GridLayoutManager(context,3)
+        recyclerView.adapter = movieAdapter
 
 
-        searchView!!.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return false
             }
 
             override fun onQueryTextChange(query: String?): Boolean {
-                presenter!!.filterMovieList(query!!)
+                presenter.filterMovieList(query!!)
                 if (query.isEmpty()) {
-                    Utilities.hideKeyboardFrom(searchView!!)
+                    Utilities.hideKeyboardFrom(searchView)
                 }
                 return false
             }
 
         })
 
-        recyclerView!!.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
@@ -104,7 +123,7 @@ class MovieCatalogFragment : Fragment(), MovieCatalogContract.View {
                             .findFirstVisibleItemPosition()
 
                     if (dy > 0 && firstVisibleItem != 0) {
-                        Utilities.animateTranslationY(searchView!!,-40, object :
+                        Utilities.animateTranslationY(searchView,-40, object :
                             Utilities.GetAnimationStatus {
                             override fun animationStatus(animationStatus: Boolean) {
                                 searchBarAnimationStatus = animationStatus
@@ -112,7 +131,7 @@ class MovieCatalogFragment : Fragment(), MovieCatalogContract.View {
                         })
                         Utilities.animateTranslationY(recyclerView, 0, null)
                     } else if (dy < 0) {
-                        Utilities.animateTranslationY(searchView!!,0, object : Utilities.GetAnimationStatus{
+                        Utilities.animateTranslationY(searchView,0, object : Utilities.GetAnimationStatus{
                             override fun animationStatus(animationStatus: Boolean) {
                                 searchBarAnimationStatus = animationStatus
                             }
@@ -130,46 +149,45 @@ class MovieCatalogFragment : Fragment(), MovieCatalogContract.View {
 
     override fun onResume() {
         super.onResume()
-        presenter!!.setView(this)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        presenter!!.unSubscribeReactive()
+        presenter.setView(this)
     }
 
 
-    override fun showMovie(movie: MovieList.Movie) {
-        movieList.add(movie)
-        recyclerView!!.adapter!!.notifyItemInserted(movieList.size - 1)
+    override fun showMovieList(movieList: List<MovieList.Movie>, page: Int) {
+        val fromIndex = this.movieList.size
+        val toIndex = this.movieList.size + movieList.size
+        this.movieList.addAll(movieList)
+        this.page = page
+        movieAdapter.notifyDataSetChanged()
     }
+
 
     override fun clearMovieList() {
         movieList.clear()
         page = 1
-        recyclerView!!.adapter!!.notifyDataSetChanged()
+        movieAdapter.notifyDataSetChanged()
     }
 
     override fun showEmptyListError() {
-        textViewEmpty!!.setVisibility(View.VISIBLE)
-        textViewEmpty!!.setText("Sin resultados")
+        textViewEmpty.visibility = View.VISIBLE
+        textViewEmpty.text = "Sin resultados"
     }
 
     override fun showInternetError() {
-        textViewEmpty!!.setVisibility(View.VISIBLE)
-        textViewEmpty!!.setText("Sin conexión a internet")
+        textViewEmpty.visibility = View.VISIBLE
+        textViewEmpty.text = "Sin conexión a internet"
     }
 
     override fun hideError() {
-        textViewEmpty!!.setVisibility(View.GONE)
+        textViewEmpty.visibility = View.GONE
     }
 
     override fun showProgressBar() {
-        progressBar!!.setVisibility(View.VISIBLE)
+        progressBar.visibility = View.VISIBLE
     }
 
     override fun hideProgressBar() {
-        progressBar!!.setVisibility(View.GONE)
+        progressBar.visibility = View.GONE
     }
 
     override fun openMovieDetail(movie: MovieList.Movie) {
@@ -208,6 +226,9 @@ class MovieCatalogFragment : Fragment(), MovieCatalogContract.View {
         return listType
     }
 
+    fun setListType(listType: Int) {
+        this.listType = listType
+    }
 
 
 

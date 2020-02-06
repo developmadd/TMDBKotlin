@@ -11,7 +11,9 @@ import androidx.viewpager.widget.ViewPager
 import butterknife.BindView
 import butterknife.ButterKnife
 import com.google.android.material.tabs.TabLayout
+import com.madd.madd.tmdbkotlin.Fragments.MovieCatalog.MovieCatalogContract
 import com.madd.madd.tmdbkotlin.Fragments.MovieCatalog.MovieCatalogFragment
+import com.madd.madd.tmdbkotlin.HTTP.Models.MovieList
 
 import com.madd.madd.tmdbkotlin.R
 import com.madd.madd.tmdbkotlin.Utilities.TabAdapter
@@ -21,14 +23,15 @@ import com.madd.madd.tmdbkotlin.Utilities.TabAdapter
  */
 class MovieCatalogContainerFragment : Fragment() {
 
-    @BindView(R.id.TAB_Movie_Search)    internal var tabLayout: TabLayout? = null
-    @BindView(R.id.VP_Movie_Search)     internal var viewPager: ViewPager? = null
+    var tabLayout: TabLayout? = null
+    var viewPager: ViewPager? = null
+    var v:View? = null
 
     var moviePopularCatalog:MovieCatalogFragment? = null
     var movieUpcomingCatalog:MovieCatalogFragment? = null
     var movieTopRateCatalog:MovieCatalogFragment? = null
 
-
+    var onMovieSelected:MovieCatalogContract.View.MovieSelected? = null
 
 
     override fun onCreateView(
@@ -36,8 +39,8 @@ class MovieCatalogContainerFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val v = inflater.inflate(R.layout.fragment_movie_catalog_container, container, false)
-        ButterKnife.bind(this,v)
+        v = inflater.inflate(R.layout.fragment_movie_catalog_container, container, false)
+        //ButterKnife.bind(this,v!!)
         createMovieCatalog()
         setViewPager()
 
@@ -47,15 +50,25 @@ class MovieCatalogContainerFragment : Fragment() {
 
     fun createMovieCatalog(){
         moviePopularCatalog = MovieCatalogFragment()
+        moviePopularCatalog!!.setListType(MovieCatalogFragment.POPULAR_TYPE)
+        moviePopularCatalog!!.onMovieSelected = onMovieSelected
+
         movieUpcomingCatalog = MovieCatalogFragment()
+        movieUpcomingCatalog!!.setListType(MovieCatalogFragment.UPCOMING_TYPE)
+        moviePopularCatalog!!.onMovieSelected = onMovieSelected
+
         movieTopRateCatalog = MovieCatalogFragment()
+        movieTopRateCatalog!!.setListType(MovieCatalogFragment.TOP_RATED_TYPE)
+        moviePopularCatalog!!.onMovieSelected = onMovieSelected
     }
 
 
     fun setViewPager(){
 
-        val tabAdapter = TabAdapter(childFragmentManager)
+        tabLayout = v!!.findViewById(R.id.TAB_Movie_Search)
+        viewPager = v!!.findViewById(R.id.VP_Movie_Search)
 
+        val tabAdapter = TabAdapter(childFragmentManager)
         tabAdapter.addFragment(moviePopularCatalog!!,"Más populares")
         tabAdapter.addFragment(movieUpcomingCatalog!!,"Mejor calificada")
         tabAdapter.addFragment(movieTopRateCatalog!!,"Próximo lanzamiento")

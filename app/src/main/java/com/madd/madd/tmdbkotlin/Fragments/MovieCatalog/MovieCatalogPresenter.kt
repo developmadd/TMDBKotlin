@@ -1,12 +1,16 @@
 package com.madd.madd.tmdbkotlin.Fragments.MovieCatalog
 
 import com.madd.madd.tmdbkotlin.HTTP.Models.MovieList
-import io.reactivex.observers.DisposableObserver
+import com.madd.madd.tmdbkotlin.Utilities.Utilities
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MovieCatalogPresenter:MovieCatalogContract.Presenter {
 
     private var model: MovieCatalogContract.Model? = null
     private var view: MovieCatalogContract.View? = null
+    private var backupMovieList = ArrayList<MovieList.Movie>()
 
     constructor(model: MovieCatalogContract.Model?) {
         this.model = model
@@ -17,18 +21,84 @@ class MovieCatalogPresenter:MovieCatalogContract.Presenter {
     }
 
     override fun requestMovieList() {
-        view!!.showProgressBar()
+        if( view != null ){
+            view!!.showProgressBar()
+            val page = view!!.getPage()
+
+            val callback = (object : Callback<MovieList>{
+                override fun onFailure(call: Call<MovieList>?, t: Throwable?) {
+                    view!!.showInternetError()
+                    view!!.hideProgressBar()
+                }
+
+                override fun onResponse(call: Call<MovieList>?, response: Response<MovieList>?) {
+                    val movieList = response!!.body()
+                    if(movieList.movieList.isNotEmpty()){
+                        view!!.hideError()
+                        view!!.showMovieList(movieList.movieList, movieList.page)
+                    } else {
+                        view!!.showEmptyListError()
+                    }
+                    view!!.hideProgressBar()
+
+                }
+
+            })
+
+            if( view!!.getListType() == MovieCatalogFragment.POPULAR_TYPE ){
+                model!!.getMoviePopularList(page).enqueue(callback)
+            } else if( view!!.getListType() == MovieCatalogFragment.TOP_RATED_TYPE ){
+                model!!.getMovieTopRatedList(page).enqueue(callback)
+            } else if( view!!.getListType() == MovieCatalogFragment.UPCOMING_TYPE ){
+                model!!.getMovieUpcomingList(page).enqueue(callback)
+            }
+
+
+        }
     }
 
     override fun filterMovieList(query: String) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        if (backupMovieList.isEmpty()) {
+            backupMovieList = ArrayList(view!!.getMovieList())
+        }
+
+        val filteredMovieList = java.util.ArrayList<MovieList.Movie>()
+        view!!.clearMovieList()
+
+        if (query.isNotEmpty()) {
+            val compare = Utilities.cleanString(query)
+            for (movie in backupMovieList) {
+
+                val original = Utilities.cleanString(movie.title!!)
+                if (original.startsWith(compare)) {
+                    filteredMovieList.add(movie)
+                }
+            }
+            for (movie in backupMovieList) {
+
+                val original = Utilities.cleanString(movie.title!!)
+                if (!original.startsWith(compare) && original.contains(compare)) {
+                    filteredMovieList.add(movie)
+                }
+            }
+            if (filteredMovieList.isNotEmpty()) {
+                view!!.hideError()
+                view!!.showMovieList(filteredMovieList, 1)
+            } else {
+                view!!.showEmptyListError()
+            }
+
+        } else {
+            backupMovieList.clear()
+            requestMovieList()
+        }
     }
 
     override fun selectMovie(movie: MovieList.Movie) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        if (view != null) {
+            view!!.openMovieDetail(movie)
+        }
     }
 
-    override fun unSubscribeReactive() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+
 }

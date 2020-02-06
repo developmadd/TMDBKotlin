@@ -29,6 +29,7 @@ class MovieAdapter : RecyclerView.Adapter<MovieAdapter.ViewHolder> {
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        context = parent.context
         val view = LayoutInflater.from(parent.context).inflate(R.layout.section_content,parent,false)
         return ViewHolder(view)
     }
@@ -45,17 +46,18 @@ class MovieAdapter : RecyclerView.Adapter<MovieAdapter.ViewHolder> {
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-
-        @BindView(R.id.IV_Section_Content_Poster) var imageViewPoster: ImageView? = null
-        @BindView(R.id.TV_Section_Content_Title)  var textViewTitle: TextView? = null
+        var imageViewPoster: ImageView
+        var textViewTitle: TextView
 
         init {
-            ButterKnife.bind(this, itemView)
+            imageViewPoster = itemView.findViewById(R.id.IV_Section_Content_Poster)
+            textViewTitle= itemView.findViewById(R.id.TV_Section_Content_Title)
         }
 
+
         fun bind(movie: MovieList.Movie) {
-            if (!movie.posterPath!!.isEmpty()) {
-                Glide.with(imageViewPoster!!)
+            if (movie.posterPath!!.isNotEmpty()) {
+                Glide.with(imageViewPoster)
                     .load(movie.posterPath)
                     .placeholder(
                         ContextCompat.getDrawable(
@@ -65,23 +67,23 @@ class MovieAdapter : RecyclerView.Adapter<MovieAdapter.ViewHolder> {
                     )
                     .centerCrop()
                     .transition(DrawableTransitionOptions.withCrossFade())
-                    .into(imageViewPoster!!)
+                    .into(imageViewPoster)
             } else {
-                Glide.with(imageViewPoster!!)
+                Glide.with(imageViewPoster)
                     .load(R.mipmap.ic_launcher_foreground)
                     .centerCrop()
                     .transition(DrawableTransitionOptions.withCrossFade())
-                    .into(imageViewPoster!!)
+                    .into(imageViewPoster)
             }
 
-            textViewTitle!!.setText(movie.title)
+            textViewTitle.text = movie.title
 
-            itemView.setOnClickListener {
+            itemView.setOnClickListener{
                 movieEvents!!.onMovieClick(movie)
             }
 
             val itemMinLimit = TMDBModule.TMDB_PAGINATE_STEP
-            if (movieList!!.size >= itemMinLimit && adapterPosition === movieList!!.size - 5) {
+            if (movieList!!.size >= itemMinLimit && adapterPosition == movieList!!.size - 5) {
                 movieEvents!!.onRequestNextPage()
             }
         }

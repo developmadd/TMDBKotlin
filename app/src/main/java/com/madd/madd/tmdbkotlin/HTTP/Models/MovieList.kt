@@ -7,7 +7,7 @@ class MovieList {
 
     @SerializedName("page")
     @Expose
-    var page: Int? = null
+    var page: Int = 0
 
     @SerializedName("results")
     @Expose

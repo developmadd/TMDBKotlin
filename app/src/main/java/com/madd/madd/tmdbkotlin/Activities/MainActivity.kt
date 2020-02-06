@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import com.madd.madd.tmdbkotlin.DI.App
+import com.madd.madd.tmdbkotlin.Fragments.MovieCatalog.MovieCatalogContract
 import com.madd.madd.tmdbkotlin.Fragments.MovieCatalogContainerFragment
 import com.madd.madd.tmdbkotlin.Fragments.MovieDetail.MovieDetailFragment
 import com.madd.madd.tmdbkotlin.Fragments.TVShowCatalogContainerFragment
@@ -30,8 +31,7 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        //application
+        (application as App).component!!.inject(this)
         bindUI()
         setEvents()
 
@@ -39,7 +39,11 @@ class MainActivity : AppCompatActivity() {
 
 
     fun setEvents(){
-
+        movieCatalogContainerFragment.onMovieSelected = ( object : MovieCatalogContract.View.MovieSelected {
+            override fun onMovieClick(movie: MovieList.Movie) {
+                showMovieDetail(movie)
+            }
+        })
     }
 
     fun showMovieDetail( movie: MovieList.Movie ){
