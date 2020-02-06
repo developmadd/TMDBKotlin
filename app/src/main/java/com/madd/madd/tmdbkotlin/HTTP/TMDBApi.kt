@@ -1,9 +1,6 @@
 package com.madd.madd.tmdbkotlin.HTTP
 
-import com.madd.madd.tmdbkotlin.HTTP.Models.Cast
-import com.madd.madd.tmdbkotlin.HTTP.Models.ContentList
-import com.madd.madd.tmdbkotlin.HTTP.Models.Movie
-import com.madd.madd.tmdbkotlin.HTTP.Models.MovieList
+import com.madd.madd.tmdbkotlin.HTTP.Models.*
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -57,5 +54,60 @@ interface TMDBApi {
         @Query("api_key") apiKey: String
     ): Call<Cast>
 
+
+
+
+
+
+
+
+
+
+    @GET("tv/{tv_show_id}")
+    fun getTVShow(
+        @Path("tv_show_id") tvShowId: String,
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String
+    ): Call<TVShow>
+
+
+    @GET("tv/popular")
+    fun getTVShowPopularList(
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String,
+        @Query("page") page: Int
+    ): Call<TVShowList>
+
+
+    @GET("tv/on_the_air")
+    fun getTVShowOnAirList(
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String,
+        @Query("page") page: Int
+    ): Call<TVShowList>
+
+
+    @GET("tv/top_rated")
+    fun getTVShowTopRatedList(
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String,
+        @Query("page") page: Int
+    ): Call<TVShowList>
+
+
+    @GET("search/tv")
+    fun getTVShowListByQuery(
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String,
+        @Query("query") query: String,
+        @Query("page") page: Int
+    ): Call<ContentList>
+
+
+    @GET("movie/{tv_show_id}/credits")
+    fun getTVShowCast(
+        @Path("tv_show_id") tvShowId: String,
+        @Query("api_key") apiKey: String
+    ): Call<Cast>
 
 }

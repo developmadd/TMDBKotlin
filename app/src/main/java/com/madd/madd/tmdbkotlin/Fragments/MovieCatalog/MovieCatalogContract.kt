@@ -7,6 +7,11 @@ import retrofit2.Call
 interface MovieCatalogContract {
 
     interface View{
+
+        var listType:Int
+        var page:Int
+        var movieList:ArrayList<MovieList.Movie>
+
         fun showMovieList(movieList: List<MovieList.Movie>, page: Int)
         fun clearMovieList()
         fun showEmptyListError()
@@ -16,18 +21,13 @@ interface MovieCatalogContract {
         fun hideProgressBar()
         fun openMovieDetail(movie: MovieList.Movie)
 
-        fun getMovieList(): ArrayList<MovieList.Movie>
-        fun getPage(): Int
-        fun setPage(page: Int)
-        fun getListType(): Int
-
         interface MovieSelected{
             fun onMovieClick(movie: MovieList.Movie)
         }
     }
 
     interface Presenter{
-        fun setView(view: MovieCatalogContract.View)
+        fun setView(view: View)
 
         fun requestMovieList()
         fun filterMovieList(query: String)

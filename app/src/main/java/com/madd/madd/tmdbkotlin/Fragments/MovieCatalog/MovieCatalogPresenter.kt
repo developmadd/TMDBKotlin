@@ -23,7 +23,7 @@ class MovieCatalogPresenter:MovieCatalogContract.Presenter {
     override fun requestMovieList() {
         if( view != null ){
             view!!.showProgressBar()
-            val page = view!!.getPage()
+            val page = view!!.page
 
             val callback = (object : Callback<MovieList>{
                 override fun onFailure(call: Call<MovieList>?, t: Throwable?) {
@@ -35,7 +35,7 @@ class MovieCatalogPresenter:MovieCatalogContract.Presenter {
                     val movieList = response!!.body()
                     if(movieList.movieList.isNotEmpty()){
                         view!!.hideError()
-                        view!!.showMovieList(movieList.movieList, movieList.page)
+                        view!!.showMovieList(movieList.movieList, movieList.page + 1)
                     } else {
                         view!!.showEmptyListError()
                     }
@@ -45,11 +45,11 @@ class MovieCatalogPresenter:MovieCatalogContract.Presenter {
 
             })
 
-            if( view!!.getListType() == MovieCatalogFragment.POPULAR_TYPE ){
+            if( view!!.listType == MovieCatalogFragment.POPULAR_TYPE ){
                 model!!.getMoviePopularList(page).enqueue(callback)
-            } else if( view!!.getListType() == MovieCatalogFragment.TOP_RATED_TYPE ){
+            } else if( view!!.listType == MovieCatalogFragment.TOP_RATED_TYPE ){
                 model!!.getMovieTopRatedList(page).enqueue(callback)
-            } else if( view!!.getListType() == MovieCatalogFragment.UPCOMING_TYPE ){
+            } else if( view!!.listType == MovieCatalogFragment.UPCOMING_TYPE ){
                 model!!.getMovieUpcomingList(page).enqueue(callback)
             }
 
@@ -59,10 +59,10 @@ class MovieCatalogPresenter:MovieCatalogContract.Presenter {
 
     override fun filterMovieList(query: String) {
         if (backupMovieList.isEmpty()) {
-            backupMovieList = ArrayList(view!!.getMovieList())
+            backupMovieList = ArrayList(view!!.movieList)
         }
 
-        val filteredMovieList = java.util.ArrayList<MovieList.Movie>()
+        val filteredMovieList = ArrayList<MovieList.Movie>()
         view!!.clearMovieList()
 
         if (query.isNotEmpty()) {

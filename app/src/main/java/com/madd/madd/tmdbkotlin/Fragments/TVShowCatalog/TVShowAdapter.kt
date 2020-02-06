@@ -1,4 +1,4 @@
-package com.madd.madd.tmdbkotlin.Fragments.MovieCatalog
+package com.madd.madd.tmdbkotlin.Fragments.TVShowCatalog
 
 import android.view.LayoutInflater
 import android.view.View
@@ -9,51 +9,58 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import com.madd.madd.tmdbkotlin.HTTP.Models.MovieList
+import com.madd.madd.tmdbkotlin.HTTP.Models.TVShowList
 import com.madd.madd.tmdbkotlin.HTTP.TMDBModule
 import com.madd.madd.tmdbkotlin.R
+import org.w3c.dom.Text
 
-class MovieAdapter : RecyclerView.Adapter<MovieAdapter.ViewHolder> {
+class TVShowAdapter: RecyclerView.Adapter<TVShowAdapter.ViewHolder> {
 
-    var movieEvents:MovieEvents? = null
-    var movieList:ArrayList<MovieList.Movie>? = null
 
-    constructor(movieList: ArrayList<MovieList.Movie>, movieEvents: MovieEvents) {
-        this.movieEvents = movieEvents
-        this.movieList = movieList
+
+    var tvShowEvents:TVShowEvents? = null
+    var tvShowList = ArrayList<TVShowList.TVShow>()
+
+    constructor(tvShowList: ArrayList<TVShowList.TVShow>, tvShowEvents: TVShowEvents?) {
+        this.tvShowEvents = tvShowEvents
+        this.tvShowList = tvShowList
     }
+
+
+
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.section_content,parent,false)
-        return ViewHolder(view)
+        val v = LayoutInflater.from(parent.context).inflate(R.layout.section_content,parent,false)
+        return ViewHolder(v)
     }
 
     override fun getItemCount(): Int {
-        return movieList!!.size
+        return tvShowList.size
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(movieList!![position])
+        holder.bind(tvShowList[position])
     }
+
 
 
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        var imageViewPoster: ImageView
-        var textViewTitle: TextView
+        var imageViewPoster:ImageView
+        var textViewTitle:TextView
 
         init {
             imageViewPoster = itemView.findViewById(R.id.IV_Section_Content_Poster)
-            textViewTitle= itemView.findViewById(R.id.TV_Section_Content_Title)
+            textViewTitle = itemView.findViewById(R.id.TV_Section_Content_Title)
         }
 
+        fun bind(tvShow:TVShowList.TVShow){
 
-        fun bind(movie: MovieList.Movie) {
-            if (movie.posterPath!!.isNotEmpty()) {
+            if (tvShow.posterPath!!.isNotEmpty()) {
                 Glide.with(imageViewPoster.context)
-                    .load(movie.posterPath)
+                    .load(tvShow.posterPath)
                     .placeholder(
                         ContextCompat.getDrawable(
                             imageViewPoster.context,
@@ -71,22 +78,22 @@ class MovieAdapter : RecyclerView.Adapter<MovieAdapter.ViewHolder> {
                     .into(imageViewPoster)
             }
 
-            textViewTitle.text = movie.title
+            textViewTitle.text = tvShow.name
 
-            itemView.setOnClickListener{
-                movieEvents!!.onMovieClick(movie)
-            }
+            itemView.setOnClickListener { view -> tvShowEvents!!.onTVShowClick(tvShow) }
 
             val itemMinLimit = TMDBModule.TMDB_PAGINATE_STEP
-            if (movieList!!.size >= itemMinLimit && adapterPosition == movieList!!.size - 5) {
-                movieEvents!!.onRequestNextPage()
+            if (tvShowList.size >= itemMinLimit && adapterPosition == tvShowList.size - 5) {
+                tvShowEvents!!.onRequestNextPage()
             }
         }
+
+
     }
 
+    interface TVShowEvents{
 
-    interface MovieEvents {
-        fun onMovieClick(selectedMovie: MovieList.Movie)
+        fun onTVShowClick(selectedTVShow:TVShowList.TVShow)
         fun onRequestNextPage()
 
     }

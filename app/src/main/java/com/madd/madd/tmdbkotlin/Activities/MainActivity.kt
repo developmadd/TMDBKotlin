@@ -13,6 +13,7 @@ import com.madd.madd.tmdbkotlin.DI.App
 import com.madd.madd.tmdbkotlin.Fragments.MovieCatalog.MovieCatalogContract
 import com.madd.madd.tmdbkotlin.Fragments.MovieCatalogContainerFragment
 import com.madd.madd.tmdbkotlin.Fragments.MovieDetail.MovieDetailFragment
+import com.madd.madd.tmdbkotlin.Fragments.TVShowCatalog.TVShowCatalogContract
 import com.madd.madd.tmdbkotlin.Fragments.TVShowCatalogContainerFragment
 import com.madd.madd.tmdbkotlin.Fragments.TVShowDetail.TVShowDetailFragment
 import com.madd.madd.tmdbkotlin.HTTP.Models.MovieList
@@ -44,6 +45,12 @@ class MainActivity : AppCompatActivity() {
                 showMovieDetail(movie)
             }
         })
+
+        tvShowCatalogContainerFragment.onTVShowSelected = ( object : TVShowCatalogContract.View.TVShowSelected {
+            override fun onTVShowClick(tvShow: TVShowList.TVShow) {
+                showTVShowDetail(tvShow)
+            }
+        })
     }
 
     fun showMovieDetail( movie: MovieList.Movie ){
@@ -51,7 +58,8 @@ class MainActivity : AppCompatActivity() {
         val movieDetailFragment = MovieDetailFragment()
         movieDetailFragment.movieId = movie.id!!
 
-        supportFragmentManager.beginTransaction().replace(R.id.CTNR_Detail,movieDetailFragment)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.CTNR_Detail,movieDetailFragment)
             .commit()
 
         showDetail()
@@ -62,7 +70,8 @@ class MainActivity : AppCompatActivity() {
         val tvShowDetailFragment = TVShowDetailFragment()
         tvShowDetailFragment.tvShowId = tvShow.id!!
 
-        supportFragmentManager.beginTransaction().replace(R.id.CTNR_Detail,tvShowDetailFragment)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.CTNR_Detail,tvShowDetailFragment)
             .commit()
 
         showDetail()
@@ -74,32 +83,35 @@ class MainActivity : AppCompatActivity() {
 
 
     fun showDetail(){
-        detailContainer!!.alpha = 0f
+        //detailContainer!!.alpha = 0f
         detailContainer!!.visibility = View.VISIBLE
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             detailContainer!!.animate()
                 .alpha(0f)
                 .setDuration(500)
                 .start()
-        }
+        }*/
     }
     fun hideDetail(){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             detailContainer!!.animate()
                 .alpha(0f)
                 .setDuration(500)
-                .withEndAction {
+                .withEndAction {*/
                     detailContainer!!.visibility = View.GONE
-                }
+                /*}
                 .start()
-        }
+        }*/
     }
 
 
-
-
-
-
+    override fun onBackPressed() {
+        if(detailContainer!!.visibility == View.VISIBLE){
+            hideDetail()
+        } else {
+            super.onBackPressed()
+        }
+    }
 
 
     fun bindUI(){

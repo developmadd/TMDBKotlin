@@ -25,7 +25,7 @@ class MovieCatalogContainerFragment : Fragment() {
 
     var tabLayout: TabLayout? = null
     var viewPager: ViewPager? = null
-    var v:View? = null
+
 
     var moviePopularCatalog:MovieCatalogFragment? = null
     var movieUpcomingCatalog:MovieCatalogFragment? = null
@@ -39,39 +39,39 @@ class MovieCatalogContainerFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        v = inflater.inflate(R.layout.fragment_movie_catalog_container, container, false)
-        //ButterKnife.bind(this,v!!)
-        createMovieCatalog()
-        setViewPager()
+        val v = inflater.inflate(R.layout.fragment_movie_catalog_container, container, false)
 
-        return  v
+        createMovieCatalog()
+        setViewPager(v)
+
+        return v
     }
 
 
     fun createMovieCatalog(){
         moviePopularCatalog = MovieCatalogFragment()
-        moviePopularCatalog!!.setListType(MovieCatalogFragment.POPULAR_TYPE)
+        moviePopularCatalog!!.listType = MovieCatalogFragment.POPULAR_TYPE
         moviePopularCatalog!!.onMovieSelected = onMovieSelected
 
         movieUpcomingCatalog = MovieCatalogFragment()
-        movieUpcomingCatalog!!.setListType(MovieCatalogFragment.UPCOMING_TYPE)
+        movieUpcomingCatalog!!.listType = MovieCatalogFragment.UPCOMING_TYPE
         moviePopularCatalog!!.onMovieSelected = onMovieSelected
 
         movieTopRateCatalog = MovieCatalogFragment()
-        movieTopRateCatalog!!.setListType(MovieCatalogFragment.TOP_RATED_TYPE)
+        movieTopRateCatalog!!.listType = MovieCatalogFragment.TOP_RATED_TYPE
         moviePopularCatalog!!.onMovieSelected = onMovieSelected
     }
 
 
-    fun setViewPager(){
+    fun setViewPager(v:View){
 
-        tabLayout = v!!.findViewById(R.id.TAB_Movie_Search)
-        viewPager = v!!.findViewById(R.id.VP_Movie_Search)
+        tabLayout = v.findViewById(R.id.TAB_Movie_Search)
+        viewPager = v.findViewById(R.id.VP_Movie_Search)
 
         val tabAdapter = TabAdapter(childFragmentManager)
         tabAdapter.addFragment(moviePopularCatalog!!,"Más populares")
-        tabAdapter.addFragment(movieUpcomingCatalog!!,"Mejor calificada")
-        tabAdapter.addFragment(movieTopRateCatalog!!,"Próximo lanzamiento")
+        tabAdapter.addFragment(movieTopRateCatalog!!,"Mejor calificada")
+        tabAdapter.addFragment(movieUpcomingCatalog!!,"Próximo lanzamiento")
 
         viewPager!!.adapter = tabAdapter
         tabLayout!!.setupWithViewPager(viewPager)
